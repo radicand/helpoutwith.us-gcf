@@ -1,0 +1,5 @@
+query ActivityUserRoleRel($user_id: ID!, $activityActivity_id: ID!) {
+  SomeActivityExists(
+    filter: { id: $activityActivity_id, activity: { members_some: { user: { id: $user_id }, role: Admin } } }
+  )
+}

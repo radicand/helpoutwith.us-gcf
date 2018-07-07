@@ -1,0 +1,116 @@
+type File @model {
+  contentType: String!
+  createdAt: DateTime!
+  id: ID! @isUnique
+  name: String!
+  secret: String! @isUnique
+  size: Int!
+  updatedAt: DateTime!
+  url: String! @isUnique
+  owner: User @relation(name: "FileOwnerRel", onDelete: NO_ACTION)
+  type: FileType!
+  organization: Organization @relation(name: "OrganizationFileRel", onDelete: NO_ACTION)
+}
+
+type Organization @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  members: [OrganizationUserRole!]! @relation(name: "OrganizationUserRoleRel", onDelete: CASCADE)
+  name: String!
+	timezone: String! @migrationValue(value: "America/Chicago")
+  description: String
+  link: String
+  location: String
+  activities: [Activity!]! @relation(name: "OrganizationActivityRel", onDelete: CASCADE)
+  bannerImage: File @relation(name: "OrganizationFileRel", onDelete: CASCADE)
+}
+
+type OrganizationUserRole @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  user: User! @relation(name: "UserRoleOrganizationRel", onDelete: NO_ACTION)
+  role: Role! @defaultValue(value: Member)
+  organization: Organization! @relation(name: "OrganizationUserRoleRel", onDelete: NO_ACTION)
+}
+
+type ActivityUserRole @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  user: User! @relation(name: "UserRoleActivityRel", onDelete: NO_ACTION)
+  role: Role! @defaultValue(value: Member)
+  activity: Activity! @relation(name: "ActivityUserRoleRel", onDelete: NO_ACTION)
+}
+
+type SpotUserRole @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  user: User! @relation(name: "UserRoleSpotRel", onDelete: NO_ACTION)
+  spot: Spot! @relation(name: "SpotUserRoleRel", onDelete: NO_ACTION)
+  status: SpotStatus @defaultValue(value: Confirmed)
+}
+
+type User @model {
+  createdAt: DateTime!
+  name: String!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  organizations: [OrganizationUserRole!]! @relation(name: "UserRoleOrganizationRel", onDelete: CASCADE)
+  activities: [ActivityUserRole!]! @relation(name: "UserRoleActivityRel", onDelete: CASCADE)
+  spots: [SpotUserRole!]! @relation(name: "UserRoleSpotRel", onDelete: CASCADE)
+  files: [File!]! @relation(name: "FileOwnerRel", onDelete: CASCADE)
+  photoLink: String
+  email: String! @isUnique
+  googleUserId: String @isUnique
+}
+
+type Activity @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  description: String
+  organization: Organization! @relation(name: "OrganizationActivityRel", onDelete: NO_ACTION)
+  members: [ActivityUserRole!]! @relation(name: "ActivityUserRoleRel", onDelete: CASCADE)
+  location: String
+  spots: [Spot!]! @relation(name: "ActivitySpotRel", onDelete: CASCADE)
+}
+
+type Spot @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  activity: Activity! @relation(name: "ActivitySpotRel", onDelete: NO_ACTION)
+  members: [SpotUserRole!]! @relation(name: "SpotUserRoleRel", onDelete: CASCADE)
+  location: String
+  numberNeeded: Int! @defaultValue(value: 1)
+  startsAt: DateTime!
+  endsAt: DateTime!
+}
+
+type Configuration @model {
+  id: ID! @isUnique
+  key: String! @isUnique
+  value: String!
+}
+
+enum Role {
+  Admin
+  Member
+}
+
+enum FileType {
+  Banner
+  Photo
+  Logo
+  PDF
+}
+
+enum SpotStatus {
+  Confirmed
+  Cancelled
+  Absent
+}

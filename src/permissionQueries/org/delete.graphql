@@ -1,0 +1,3 @@
+query permitOrganizationDelete($node_id: ID!) {
+  SomeOrganizationExists(filter: { id: $node_id, members_none: { id_gt: "" } })
+}

@@ -1,0 +1,4 @@
+query SpotUserRoleRel($user_id: ID!, $membersSpotUserRole_id: ID!, $spotSpot_id: ID!) {
+  SomeSpotUserRoleExists(filter: { id: $membersSpotUserRole_id, user: { id: $user_id } })
+  SomeSpotExists(filter: { id: $spotSpot_id, activity: { members_some: { user: { id: $user_id } } } })
+}

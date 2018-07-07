@@ -1,0 +1,8 @@
+type SendUpcomingRemindersPayload {
+  notificationsSent: Int!
+  errors: [String!]
+}
+
+extend type Mutation {
+  sendUpcomingReminders(daysOut: Int!, filled: Boolean!, unfilled: Boolean!): SendUpcomingRemindersPayload
+}

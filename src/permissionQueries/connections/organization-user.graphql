@@ -1,0 +1,5 @@
+query OrganizationUserRoleRel($user_id: ID!, $organizationOrganization_id: ID!) {
+  SomeOrganizationExists(
+    filter: { id: $organizationOrganization_id, activity: { members_some: { user: { id: $user_id }, role: Admin } } }
+  )
+}

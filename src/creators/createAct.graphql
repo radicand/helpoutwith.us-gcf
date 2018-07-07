@@ -1,0 +1,13 @@
+type CreateActPayload {
+  id: ID!
+  name: String!
+  description: String
+  location: String
+  organizationId: ID!
+  initialAdminMemberId: String
+}
+
+extend type Mutation {
+  # return user data if request contains valid authentication token
+  createAct(name: String!, description: String, location: String, organizationId: ID!): CreateActPayload
+}

@@ -1,0 +1,195 @@
+types: ./types.graphql
+
+functions:
+  googleAuthentication:
+    handler:
+      code:
+        src: ./src/google/googleAuthentication.ts
+    type: resolver
+    schema: ./src/google/googleAuthentication.graphql
+  loggedInUser:
+    handler:
+      code:
+        src: ./src/google/loggedInUser.ts
+    type: resolver
+    schema: ./src/google/loggedInUser.graphql
+  createOrg:
+    handler:
+      code:
+        src: ./src/creators/createOrg.ts
+    type: resolver
+    schema: ./src/creators/createOrg.graphql
+  createAct:
+    handler:
+      code:
+        src: ./src/creators/createAct.ts
+    type: resolver
+    schema: ./src/creators/createAct.graphql
+  addOrgUserRole:
+    handler:
+      code:
+        src: ./src/creators/addOrgUserRole.ts
+        environment:
+          MJ_APIKEY_PUBLIC: ${env:MJ_APIKEY_PUBLIC}
+          MJ_APIKEY_PRIVATE: ${env:MJ_APIKEY_PRIVATE}
+    type: resolver
+    schema: ./src/creators/addOrgUserRole.graphql
+  addActivityUserRole:
+    handler:
+      code:
+        src: ./src/creators/addActivityUserRole.ts
+        environment:
+          MJ_APIKEY_PUBLIC: ${env:MJ_APIKEY_PUBLIC}
+          MJ_APIKEY_PRIVATE: ${env:MJ_APIKEY_PRIVATE}
+    type: resolver
+    schema: ./src/creators/addActivityUserRole.graphql
+  sendUpcomingReminders:
+    handler:
+      code:
+        src: ./src/notifications/sendUpcomingReminders.ts
+        environment:
+          MJ_APIKEY_PUBLIC: ${env:MJ_APIKEY_PUBLIC}
+          MJ_APIKEY_PRIVATE: ${env:MJ_APIKEY_PRIVATE}
+    type: resolver
+    schema: ./src/notifications/sendUpcomingReminders.graphql
+  mailjet:
+    handler:
+      code:
+        src: ./src/messaging/mailjet.ts
+        environment:
+          MJ_APIKEY_PUBLIC: ${env:MJ_APIKEY_PUBLIC}
+          MJ_APIKEY_PRIVATE: ${env:MJ_APIKEY_PRIVATE}
+    type: resolver
+    schema: ./src/messaging/mailjet.graphql
+
+permissions:
+- operation: User.read
+  authenticated: true
+  query: ./src/permissionQueries/user/read.graphql
+  fields:
+  - id
+  - name
+  - email
+  - photoLink
+
+- operation: Activity.read
+  authenticated: true
+  query: ./src/permissionQueries/activity/read.graphql
+# no create query - this is handled by the custom mutator function
+- operation: Activity.update
+  authenticated: true
+  query: ./src/permissionQueries/activity/update.graphql
+- operation: Activity.delete
+  authenticated: true
+  query: ./src/permissionQueries/activity/delete.graphql
+
+- operation: ActivityUserRole.read
+  authenticated: true
+  query: ./src/permissionQueries/activityMember/read.graphql
+- operation: ActivityUserRole.create
+  authenticated: true
+  query: ./src/permissionQueries/activityMember/create.graphql
+- operation: ActivityUserRole.update
+  authenticated: true
+  query: ./src/permissionQueries/activityMember/update.graphql
+- operation: ActivityUserRole.delete
+  authenticated: true
+  query: ./src/permissionQueries/activityMember/delete.graphql
+
+- operation: File.read
+  authenticated: true
+- operation: File.create
+  authenticated: true
+- operation: File.update
+  authenticated: true
+
+- operation: Organization.read
+  authenticated: true
+  query: ./src/permissionQueries/org/read.graphql
+# no create query - this is handled by the custom mutator function
+- operation: Organization.update
+  authenticated: true
+  query: ./src/permissionQueries/org/update.graphql
+- operation: Organization.delete
+  authenticated: true
+  query: ./src/permissionQueries/org/delete.graphql
+
+- operation: OrganizationUserRole.read
+  authenticated: true
+  query: ./src/permissionQueries/orgMember/read.graphql
+# no create query - this is handled by the custom mutator function
+- operation: OrganizationUserRole.update
+  authenticated: true
+  query: ./src/permissionQueries/orgMember/update.graphql
+  fields:
+  - role
+- operation: OrganizationUserRole.delete
+  authenticated: true
+  query: ./src/permissionQueries/orgMember/delete.graphql
+
+- operation: Spot.read
+  authenticated: true
+  query: ./src/permissionQueries/spot/read.graphql
+- operation: Spot.create
+  authenticated: true
+  query: ./src/permissionQueries/spot/create.graphql
+- operation: Spot.update
+  authenticated: true
+  query: ./src/permissionQueries/spot/update.graphql
+  fields:
+  - location
+  - numberNeeded
+  - startsAt
+  - endsAt
+- operation: Spot.delete
+  authenticated: true
+  query: ./src/permissionQueries/spot/delete.graphql
+
+- operation: SpotUserRole.read
+  authenticated: true
+  query: ./src/permissionQueries/spotMember/read.graphql
+- operation: SpotUserRole.create
+  authenticated: true
+  query: ./src/permissionQueries/spotMember/create.graphql
+- operation: SpotUserRole.update
+  authenticated: true
+  query: ./src/permissionQueries/spotMember/update.graphql
+  fields:
+  - status
+- operation: SpotUserRole.delete
+  authenticated: true
+  query: ./src/permissionQueries/spotMember/delete.graphql
+
+- operation: OrganizationUserRoleRel.*
+  authenticated: true
+  query: ./src/permissionQueries/connections/organization-user.graphql
+- operation: ActivityUserRoleRel.*
+  authenticated: true
+  query: ./src/permissionQueries/connections/activity-user.graphql
+
+#spots
+- operation: SpotUserRoleRel.connect
+  authenticated: true
+#  query: ./src/permissionQueries/connections/spot-user.graphql
+- operation: UserRoleSpotRel.connect
+  authenticated: true
+
+- operation: ActivitySpotRel.connect
+  authenticated: true
+  query: ./src/permissionQueries/connections/activity-spot.graphql
+
+- operation: FileOwnerRel.connect
+  authenticated: true
+# - operation: OrganizationActivityRel.*
+#   authenticated: true
+# - operation: OrganizationFileRel.*
+#   authenticated: true
+
+# - operation: UserRoleActivityRel.*
+#   authenticated: true
+# - operation: UserRoleOrganizationRel.*
+#   authenticated: true
+
+rootTokens:
+  - playground
+  - notifications

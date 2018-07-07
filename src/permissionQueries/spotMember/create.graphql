@@ -1,0 +1,10 @@
+query permitSpotUserRoleCreate($user_id: ID!, $input_spotId: ID!, $input_userId: ID!) {
+  SomeActivityUserRoleExists(
+    filter: {
+      activity: {
+        spots_some: { id: $input_spotId }
+        members_some: { user: { AND: [{ id: $user_id }, { id: $input_userId }] } }
+      }
+    }
+  )
+}

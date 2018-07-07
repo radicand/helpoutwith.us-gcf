@@ -1,0 +1,3 @@
+query permitOrganizationUserRole($user_id: ID!, $node_id: ID!) {
+  SomeOrganizationUserRoleExists(filter: { id: $node_id, organization: { members_some: { user: { id: $user_id } } } })
+}

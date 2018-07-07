@@ -1,0 +1,3 @@
+query permitOrganizationUpdate($user_id: ID!, $node_id: ID!) {
+  SomeOrganizationUserRoleExists(filter: { organization: { id: $node_id }, role: Admin, user: { id: $user_id } })
+}

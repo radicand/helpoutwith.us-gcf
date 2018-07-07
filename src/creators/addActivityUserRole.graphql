@@ -1,0 +1,10 @@
+type AddActivityUserRolePayload {
+  userId: ID!
+  activityId: ID!
+  role: String!
+  activityUserRoleId: ID!
+}
+
+extend type Mutation {
+  addActivityUserRole(activityId: ID!, userId: ID!, role: String!): AddActivityUserRolePayload
+}

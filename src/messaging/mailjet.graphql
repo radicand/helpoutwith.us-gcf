@@ -1,0 +1,7 @@
+type MailjetEmailPayload {
+  success: [Boolean!]!
+}
+
+extend type Mutation {
+  sendMailjetTemplateEmail(to: [String!]!, templateId: Int!, variables: String!): MailjetEmailPayload
+}

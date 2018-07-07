@@ -1,0 +1,15 @@
+query permitSpotUserRoleUpdate($user_id: ID!, $node_id: ID!) {
+  SomeActivityUserRoleExists(
+    filter: {
+      OR: [
+        {
+          activity: {
+            spots_some: { members_some: { id: $node_id } }
+            members_some: { role: Admin, user: { id: $user_id } }
+          }
+        },
+        { activity: { spots_some: { members_some: { id: $node_id, user: { id: $user_id } } } } }
+      ]
+    }
+  )
+}

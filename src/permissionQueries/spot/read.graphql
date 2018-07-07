@@ -1,0 +1,3 @@
+query permitSpot($user_id: ID!, $node_id: ID!) {
+  SomeSpotExists(filter: { id: $node_id, activity: { organization: { members_some: { user: { id: $user_id } } } } })
+}

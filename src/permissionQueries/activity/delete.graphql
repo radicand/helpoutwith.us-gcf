@@ -1,0 +1,5 @@
+query permitActivityDelete($node_id: ID!, $user_id: ID!) {
+  SomeOrganizationUserRoleExists(
+    filter: { role: Admin, user: { id: $user_id }, organization: { activities_some: { id: $node_id } } }
+  )
+}

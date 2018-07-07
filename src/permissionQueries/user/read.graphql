@@ -1,0 +1,5 @@
+query permitUserRead($user_id: ID!, $node_id: ID!) {
+  SomeUserExists(
+    filter: { id: $node_id, organizations_some: { organization: { members_some: { user: { id: $user_id } } } } }
+  )
+}

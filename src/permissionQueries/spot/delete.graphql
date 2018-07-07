@@ -1,0 +1,5 @@
+query permitSpot($user_id: ID!, $node_id: ID!) {
+  SomeActivityUserRoleExists(
+    filter: { activity: { spots_some: { id: $node_id } }, role: Admin, user: { id: $user_id } }
+  )
+}

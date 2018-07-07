@@ -1,0 +1,10 @@
+query permitSpotUserRoleDelete($user_id: ID!, $node_id: ID!) {
+  SomeActivityUserRoleExists(
+    filter: {
+      activity: {
+        spots_some: { members_some: { id: $node_id } }
+        members_some: { role: Admin, user: { id: $user_id } }
+      }
+    }
+  )
+}

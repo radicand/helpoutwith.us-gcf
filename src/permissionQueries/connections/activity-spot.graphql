@@ -1,0 +1,3 @@
+query ActivitySpotRel($activityActivity_id: ID!, $user_id: ID!) {
+  SomeActivityExists(filter: { id: $activityActivity_id, members_some: { user: { id: $user_id }, role: Admin } })
+}

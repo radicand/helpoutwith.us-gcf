@@ -1,0 +1,5 @@
+query permitActivityUserRoleUpdate($user_id: ID!, $node_id: ID!) {
+  SomeActivityUserRoleExists(
+    filter: { id: $node_id, activity: { members_some: { role: Admin, user: { id: $user_id } } } }
+  )
+}

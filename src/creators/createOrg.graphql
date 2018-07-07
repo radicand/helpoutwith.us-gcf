@@ -1,0 +1,14 @@
+type CreateOrgPayload {
+  id: ID!
+  name: String!
+	timezone: String!
+  description: String
+  location: String
+  link: String
+  initialAdminMemberId: String
+}
+
+extend type Mutation {
+  # return user data if request contains valid authentication token
+  createOrg(name: String!, timezone: String!, description: String, location: String, link: String): CreateOrgPayload
+}

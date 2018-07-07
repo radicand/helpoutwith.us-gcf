@@ -1,0 +1,10 @@
+type AddOrgUserRolePayload {
+  userId: ID!
+  organizationId: ID!
+  role: String!
+  organizationUserRoleId: ID!
+}
+
+extend type Mutation {
+  addOrgUserRole(organizationId: ID!, email: String!, role: String!): AddOrgUserRolePayload
+}

@@ -1,0 +1,3 @@
+query permitActivityUpdate($node_id: ID!, $user_id: ID!) {
+  SomeActivityExists(filter: { id: $node_id, members_some: { user: { id: $user_id }, role: Admin } })
+}

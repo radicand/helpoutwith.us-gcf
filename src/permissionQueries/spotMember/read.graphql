@@ -1,0 +1,5 @@
+query permitSpotUserRoleRead($user_id: ID!, $node_id: ID!) {
+  SomeSpotUserRoleExists(
+    filter: { id: $node_id, spot: { activity: { organization: { members_some: { user: { id: $user_id } } } } } }
+  )
+}

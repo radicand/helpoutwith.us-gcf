@@ -1,0 +1,5 @@
+query permitActivityUserRoleRead($user_id: ID!, $node_id: ID!) {
+  SomeOrganizationUserRoleExists(
+    filter: { organization: { activities_some: { members_some: { id: $node_id } } }, user: { id: $user_id } }
+  )
+}
