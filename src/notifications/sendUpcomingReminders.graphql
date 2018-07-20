@@ -4,5 +4,10 @@ type SendUpcomingRemindersPayload {
 }
 
 extend type Mutation {
-  sendUpcomingReminders(daysOut: Int!, filled: Boolean!, unfilled: Boolean!): SendUpcomingRemindersPayload
+  sendUpcomingReminders(
+    daysOut: Int!
+    filled: Boolean!
+    unfilled: Boolean!
+    adminSummary: Boolean!
+  ): SendUpcomingRemindersPayload
 }

@@ -27,6 +27,18 @@ interface IUser {
   }>;
 }
 
+interface IUserActivityAdminSpots {
+  name: string;
+  email: string;
+  activities: Array<{
+    activity: {
+      name: string;
+      organization: IOrganization;
+      spots: ISpot[];
+    };
+  }>;
+}
+
 interface IActivity {
   name: string;
   members: Array<{
@@ -35,24 +47,26 @@ interface IActivity {
       email: string;
     };
   }>;
-  spots: Array<{
-    startsAt: string;
-    endsAt: string;
-    numberNeeded: number;
-    members: Array<{
-      status: 'Confirmed' | 'Absent' | 'Canceled';
-      user: {
-        name: string;
-        email: string;
-      };
-    }>;
-  }>;
+  spots: ISpot[];
   organization: IOrganization;
 }
 
 interface IOrganization {
   name: string;
   timezone: string;
+}
+
+interface ISpot {
+  startsAt: string;
+  endsAt: string;
+  numberNeeded: number;
+  members: Array<{
+    status: 'Confirmed' | 'Absent' | 'Canceled';
+    user: {
+      name: string;
+      email: string;
+    };
+  }>;
 }
 
 interface ISendUpcomingRemindersPayload {
@@ -64,6 +78,7 @@ interface IEventData {
   daysOut: number;
   filled: boolean;
   unfilled: boolean;
+  adminSummary: boolean;
 }
 
 export default async (event: FunctionEvent<IEventData>) => {
@@ -80,7 +95,7 @@ export default async (event: FunctionEvent<IEventData>) => {
   const graphcool = fromEvent(event);
   const api = graphcool.api('simple/v1');
 
-  const { daysOut, filled, unfilled } = event.data;
+  const { daysOut, filled, unfilled, adminSummary } = event.data;
 
   try {
     // TODO: Add some sort of authorization here
@@ -88,6 +103,8 @@ export default async (event: FunctionEvent<IEventData>) => {
       (unfilled && (await getUnfilledUpcomingSpots(api, daysOut))) || [];
     const myUpcomingSpots =
       (filled && (await getMyUpcomingSpots(api, daysOut))) || [];
+    const myAdminActivitySpots =
+      (adminSummary && (await getMyAdminActivitySpots(api, daysOut))) || [];
 
     let notificationsSent = 0;
     const errors = [];
@@ -95,6 +112,8 @@ export default async (event: FunctionEvent<IEventData>) => {
     if (myUpcomingSpots.length > 0) {
       await Promise.all(
         myUpcomingSpots.map((user) => {
+          /* TODO extract out others who are also volunteering this same day
+          that they have permissions to see, and add to the email template */
           return sendTemplate({
             to: [{ email: user.email, name: user.name }],
             templateId: 349788,
@@ -181,6 +200,65 @@ export default async (event: FunctionEvent<IEventData>) => {
       );
     }
 
+    if (myAdminActivitySpots.length > 0) {
+      await Promise.all(
+        myAdminActivitySpots.map((user) => {
+          let spots = [];
+
+          user.activities.forEach(
+            (act) =>
+              (spots = spots.concat(
+                act.activity.spots.map((spot) => ({
+                  activity: { name: act.activity.name },
+                  starts: luxon.DateTime.fromISO(spot.startsAt)
+                    .setZone(act.activity.organization.timezone)
+                    .toLocaleString(FULL_DATE_FORMAT),
+                  ends: luxon.DateTime.fromISO(spot.endsAt)
+                    .setZone(act.activity.organization.timezone)
+                    .toLocaleString(
+                      luxon.DateTime.fromISO(spot.startsAt)
+                        .setZone(act.activity.organization.timezone)
+                        .toFormat('DD') ===
+                      luxon.DateTime.fromISO(spot.endsAt)
+                        .setZone(act.activity.organization.timezone)
+                        .toFormat('DD')
+                        ? SHORT_DATE_FORMAT
+                        : FULL_DATE_FORMAT,
+                    ),
+                  status:
+                    spot.numberNeeded -
+                      spot.members.filter(
+                        (member) => member.status === 'Confirmed',
+                      ).length <=
+                    0
+                      ? 'FILLED'
+                      : 'UNFILLED',
+                  members: spot.members,
+                })),
+              )),
+          );
+
+          if (spots.length > 0) {
+            console.log(JSON.stringify(spots, null, 2));
+            return sendTemplate({
+              to: [{ email: user.email, name: user.name }],
+              templateId: 483519,
+              variables: {
+                name: user.name,
+                spots,
+              },
+            }).then((result) => {
+              if (result.data && result.data.success) {
+                notificationsSent++;
+              } else if (result.error) {
+                errors.push(result.error);
+              }
+            });
+          } else return;
+        }),
+      );
+    }
+
     return {
       data: {
         errors,
@@ -209,9 +287,9 @@ async function getUnfilledUpcomingSpots(api: GraphQLClient, daysOut: number) {
         startsAt_lt: $endRange
       }
     }) {
-			organization {
-				timezone
-			}
+      organization {
+        timezone
+      }
       name
       members {
         user {
@@ -227,7 +305,7 @@ async function getUnfilledUpcomingSpots(api: GraphQLClient, daysOut: number) {
         endsAt
         numberNeeded
         members {
-					status
+          status
           user {
             name
             email
@@ -307,4 +385,51 @@ async function getMyUpcomingSpots(api: GraphQLClient, daysOut: number) {
   return api.request<{ allUsers: IUser[] }>(query, data).then((r) => {
     return r.allUsers;
   });
+}
+
+async function getMyAdminActivitySpots(api: GraphQLClient, daysOut: number) {
+  const startRange = luxon.DateTime.local()
+    .plus({ days: daysOut })
+    .startOf('day');
+  const endRange = startRange.endOf('day');
+
+  const query = `
+  query getMyAdminActivitySpots($startRange: DateTime!, $endRange: DateTime) {
+    allUsers(filter: {activities_some: {role: Admin}}) {
+      name
+      email
+      activities(filter: {role: Admin}) {
+        activity {
+          name
+          organization {
+            name
+            timezone
+          }
+          spots(filter: {startsAt_gte: $startRange, startsAt_lt: $endRange}, orderBy: endsAt_ASC) {
+            startsAt
+            endsAt
+            numberNeeded
+            members(filter: {status_not: Cancelled}) {
+              status
+              user {
+								name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  `;
+
+  const data = {
+    endRange: endRange.toISO(),
+    startRange: startRange.toISO(),
+  };
+
+  return api
+    .request<{ allUsers: IUserActivityAdminSpots[] }>(query, data)
+    .then((r) => {
+      return r.allUsers;
+    });
 }
