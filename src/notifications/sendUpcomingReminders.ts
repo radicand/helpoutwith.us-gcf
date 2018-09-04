@@ -284,7 +284,10 @@ async function getUnfilledUpcomingSpots(api: GraphQLClient, daysOut: number) {
     allActivities(filter: {
       spots_some: {
         startsAt_gte: $startRange,
-        startsAt_lt: $endRange
+        startsAt_lt: $endRange,
+        members_none: {
+          status: Confirmed
+        }
       }
     }) {
       organization {
@@ -299,7 +302,10 @@ async function getUnfilledUpcomingSpots(api: GraphQLClient, daysOut: number) {
       }
       spots(filter:{
         startsAt_gte: $startRange,
-        startsAt_lt: $endRange
+        startsAt_lt: $endRange,
+        members_none: {
+          status: Confirmed
+        }
       }) {
         startsAt
         endsAt
