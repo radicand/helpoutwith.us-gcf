@@ -310,7 +310,9 @@ async function getUnfilledUpcomingSpots(api: GraphQLClient, daysOut: number) {
         startsAt
         endsAt
         numberNeeded
-        members {
+        members(filter:{
+          status_not_in: [Cancelled, Absent]
+        }) {
           status
           user {
             name
